@@ -1,25 +1,119 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template"
+author: "Muhammad Arshad khan"
+date: "December 11, 2016"
+output: html_document
 ---
 
 
-## Loading and preprocessing the data
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1-Loading Data
+
+```{r myfile, echo=TRUE}
+myfile<-read.csv("activity.csv",header=TRUE, sep=",")
+head(myfile)
+```
+
+## 2-What is mean total number of steps taken per day?
+```{r , echo=TRUE}
+vtot_Steps <-aggregate(steps~date,data=myfile,FUN=sum)
+head(vtot_Steps)
+```
+
+## 3-Make a histogram of the total number of steps taken each day
+
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+library(ggplot2)
+g <-ggplot(vtot_Steps,aes(x=vtot_Steps$date,y=vtot_Steps$steps))+geom_histogram(stat="identity")
+g
+```
+
+## 4-Calculate and report the mean and median of the total number of steps taken per day
+
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+myFun <- function(x) {
+  c(mean = mean(x), median = median(x)
+  )
+}
+mymean<- aggregate(steps ~date , data=myfile[!is.null(myfile$steps),],FUN=myFun)
+head(mymean)
+```
+
+## 5-Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+mymean<- aggregate(steps ~ interval , data=myfile[!is.null(myfile$steps),],FUN=mean)
+plot(steps ~ interval,data=mymean,type="l")
+```
+
+## 6-Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+maxinterval <-subset(mymean,steps ==max(mymean$steps))
+print (maxinterval[,-2])
+```
+
+## 7-Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+total_null<-sum(is.na(myfile))
+print (total_null)
+```
+## 8-Devise a strategy for filling in all of the missing values in the dataset.
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+myfile[is.na(myfile)] <- 0
+print (which (is.na(myfile)))
+```
+## 9-Create a new dataset that is equal to the original dataset but with the missing data filled in.
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+myfile <-read.csv("activity.csv",header = TRUE)
+mynewfile <-myfile
+mynewfile[is.na(mynewfile)] <- 0
+```
+## 10- Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
+
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+vtot_Steps <-aggregate(steps~date,data=mynewfile,FUN=sum)
+library(ggplot2)
+g <-ggplot(vtot_Steps,aes(x=vtot_Steps$date,y=vtot_Steps$steps)) +geom_histogram(stat="identity")
+g   
+```
+## 11- Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
+
+```{r , echo=TRUE,error=TRUE,fig.width=7, fig.height=4}
+myweekend <- function(x) {
+  if( x=="Friday" | x=="Saturday"){
+    print("Weekend")} 
+  else {
+    print("Weekday")
+  }
+}
+
+mynewfile[,"weekday"]<-sapply(weekdays(as.Date(mynewfile$date,'%Y-%m-%d')),FUN=myweekend)
+head(mynewfile)
+
+```
+## 12- Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+```{r , echo=TRUE,error=TRUE,fig.width=25, fig.height=25}
+
+mymeanweekdays<- aggregate(steps ~ interval , data=subset(mynewfile,mynewfile$weekday =="Weekday"),FUN=mean)
+mymeanweekend<- aggregate(steps ~ interval , data=subset(mynewfile,mynewfile$weekday =="Weekend"),FUN=mean)
+par(mfrow=c(2,1))
+plot(steps ~ interval,data=mymeanweekdays,type="l",main="Weekdays")
+plot(steps ~ interval,data=mymeanweekend,type="l",main="Weekend")
+
+```
 
 
 
-## What is mean total number of steps taken per day?
 
 
 
-## What is the average daily activity pattern?
 
 
 
-## Imputing missing values
 
 
 
-## Are there differences in activity patterns between weekdays and weekends?
+
+
